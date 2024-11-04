@@ -1,0 +1,76 @@
+# Import necessary libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import plotly.express as px
+
+# Sample DataFrame creation
+data = {
+    'age': [25, 30, 22, 35, 40, 28, 32, 45],
+    'salary': [50000, 60000, 55000, 70000, 75000, 52000, 62000, 80000],
+    'city': ['New York', 'Los Angeles', 'New York', 'San Francisco', 'Chicago', 'Los Angeles', 'Chicago', 'New York'],
+    'experience': [1, 5, 2, 7, 10, 3, 6, 12]
+}
+
+df = pd.DataFrame(data)
+
+# Function for Exploratory Data Analysis
+def exploratory_data_analysis(df):
+    # Display basic statistics
+    print("Basic Statistics:")
+    print(df.describe())
+    
+    # Distribution of numerical features
+    plt.figure(figsize=(12, 6))
+    plt.subplot(1, 2, 1)
+    sns.histplot(df['age'], kde=True)
+    plt.title('Age Distribution')
+    
+    plt.subplot(1, 2, 2)
+    sns.histplot(df['salary'], kde=True)
+    plt.title('Salary Distribution')
+    
+    plt.tight_layout()
+    plt.show()
+    
+    # Box plots for outlier detection
+    plt.figure(figsize=(12, 6))
+    sns.boxplot(data=df[['age', 'salary', 'experience']])
+    plt.title('Box Plot for Numerical Features')
+    plt.show()
+    
+    # Pairplot to visualize relationships
+    sns.pairplot(df)
+    plt.suptitle('Pairplot of Features', y=1.02)
+    plt.show()
+    
+    # Correlation heatmap
+    plt.figure(figsize=(8, 6))
+    corr = df.corr()
+    sns.heatmap(corr, annot=True, cmap='coolwarm')
+    plt.title('Correlation Heatmap')
+    plt.show()
+    
+    # Bar plot for categorical feature
+    city_counts = df['city'].value_counts()
+    sns.barplot(x=city_counts.index, y=city_counts.values)
+    plt.title('City Distribution')
+    plt.ylabel('Count')
+    plt.show()
+    
+    # Interactive Plotly visualization for salary vs. experience
+    fig = px.scatter(df, x='experience', y='salary', color='city',
+                     title='Interactive Scatter Plot: Salary vs. Experience by City',
+                     labels={'experience': 'Years of Experience', 'salary': 'Salary'})
+    
+    fig.show()
+
+# Main function to execute EDA
+def main():
+    print("Performing Exploratory Data Analysis (EDA):")
+    
+    exploratory_data_analysis(df)
+
+if __name__ == "__main__":
+    main()

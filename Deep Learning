@@ -1,0 +1,64 @@
+import tensorflow as tf
+from tensorflow.keras import layers, models
+from tensorflow.keras.datasets import mnist
+import matplotlib.pyplot as plt
+
+# Load and preprocess the MNIST dataset
+(x_train, y_train), (x_test, y_test) = mnist.load_data()
+x_train, x_test = x_train / 255.0, x_test / 255.0  # Normalize pixel values
+
+# Simple Neural Network for Classification
+def build_simple_nn():
+    model = models.Sequential([
+        layers.Flatten(input_shape=(28, 28)),
+        layers.Dense(128, activation='relu'),
+        layers.Dropout(0.2),
+        layers.Dense(10, activation='softmax')
+    ])
+    model.compile(optimizer='adam',
+                  loss='sparse_categorical_crossentropy',
+                  metrics=['accuracy'])
+    return model
+
+# Train and evaluate the simple NN model
+simple_nn = build_simple_nn()
+simple_nn.fit(x_train, y_train, epochs=5)
+simple_nn.evaluate(x_test, y_test)
+
+# Convolutional Neural Network for Image Classification
+def build_cnn():
+    model = models.Sequential([
+        layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)),
+        layers.MaxPooling2D((2, 2)),
+        layers.Conv2D(64, (3, 3), activation='relu'),
+        layers.MaxPooling2D((2, 2)),
+        layers.Flatten(),
+        layers.Dense(64, activation='relu'),
+        layers.Dense(10, activation='softmax')
+    ])
+    model.compile(optimizer='adam',
+                  loss='sparse_categorical_crossentropy',
+                  metrics=['accuracy'])
+    return model
+
+# Reshape data for CNN
+x_train_cnn = x_train.reshape(-1, 28, 28, 1)
+x_test_cnn = x_test.reshape(-1, 28, 28, 1)
+
+# Train and evaluate the CNN model
+cnn_model = build_cnn()
+cnn_model.fit(x_train_cnn, y_train, epochs=5)
+cnn_model.evaluate(x_test_cnn, y_test)
+
+# Visualize some predictions
+def plot_predictions(model):
+    predictions = model.predict(x_test_cnn[:5])
+    plt.figure(figsize=(10, 5))
+    for i in range(5):
+        plt.subplot(1, 5, i+1)
+        plt.imshow(x_test[i], cmap='gray')
+        plt.title(f"Pred: {predictions[i].argmax()}")
+        plt.axis('off')
+    plt.show()
+
+plot_predictions(cnn_model)

@@ -1,0 +1,67 @@
+# Import necessary libraries
+import pandas as pd
+from azureml.core import Workspace, Dataset
+from azureml.train.automl import AutoMLConfig
+from azureml.core.experiment import Experiment
+from azureml.core.run import Run
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+
+# Connect to Azure ML Workspace
+workspace = Workspace.from_config()
+
+# Load dataset (replace with your dataset)
+data = pd.read_csv('your_dataset.csv')  # Ensure this dataset has a target column
+
+# Prepare data for AutoML
+X = data.drop(columns=['target'])  # Replace 'target' with your actual target column name
+y = data['target']
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Create a Tabular Dataset in Azure ML
+train_data = Dataset.Tabular.register_pandas_dataframe(pd.DataFrame(X_train), 
+                                                        workspace=workspace, 
+                                                        name='train_data')
+test_data = Dataset.Tabular.register_pandas_dataframe(pd.DataFrame(X_test), 
+                                                       workspace=workspace, 
+                                                       name='test_data')
+
+# Set up AutoML configuration
+automl_config = AutoMLConfig(
+    task='classification',
+    primary_metric='accuracy',
+    training_data=train_data,
+    label_column_name='target',  # Replace with your actual target column name
+    n_cross_validations=5,
+    experiment_timeout_minutes=30,
+)
+
+# Create an experiment and submit the AutoML run
+experiment = Experiment(workspace, "automl_experiment")
+run = experiment.submit(automl_config)
+
+# Wait for the run to complete
+run.wait_for_completion(show_output=True)
+
+# Retrieve the best model from the AutoML run
+best_model = run.get_output()
+
+# Evaluate the AutoML model on the test set
+y_pred_automl = best_model.predict(X_test)
+automl_accuracy = accuracy_score(y_test, y_pred_automl)
+print(f"AutoML Model Accuracy: {automl_accuracy:.2f}")
+
+# Custom Model: Random Forest Classifier for comparison
+rf_model = RandomForestClassifier(random_state=42)
+rf_model.fit(X_train, y_train)
+y_pred_rf = rf_model.predict(X_test)
+rf_accuracy = accuracy_score(y_test, y_pred_rf)
+print(f"Random Forest Model Accuracy: {rf_accuracy:.2f}")
+
+# Compare results
+print("\nComparison of Models:")
+print(f"AutoML Accuracy: {automl_accuracy:.2f}")
+print(f"Random Forest Accuracy: {rf_accuracy:.2f}")

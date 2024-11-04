@@ -1,0 +1,91 @@
+import pandas as pd
+import numpy as np
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.ensemble import IsolationForest
+from sklearn.feature_selection import VarianceThreshold
+
+# Sample DataFrame creation
+data = {
+    'age': [25, 30, np.nan, 35, 40, 1000],
+    'salary': [50000, 60000, 55000, np.nan, 75000, 120000],
+    'city': ['New York', 'Los Angeles', 'New York', 'San Francisco', np.nan, 'Los Angeles'],
+    'experience': [1, 5, 2, np.nan, 10, 20]
+}
+
+df = pd.DataFrame(data)
+
+# Handling Missing Values
+def handle_missing_values(df):
+    # Fill missing categorical values with the mode
+    df['city'].fillna(df['city'].mode()[0], inplace=True)
+    
+    # Impute missing numerical values with the median
+    num_imputer = SimpleImputer(strategy='median')
+    df[['age', 'salary', 'experience']] = num_imputer.fit_transform(df[['age', 'salary', 'experience']])
+    
+    return df
+
+# Outlier Detection and Removal
+def detect_and_remove_outliers(df):
+    # Using Isolation Forest for outlier detection
+    iso_forest = IsolationForest(contamination=0.1)
+    outliers = iso_forest.fit_predict(df[['age', 'salary', 'experience']])
+    
+    # Remove outliers (outliers are marked as -1)
+    df = df[outliers != -1]
+    
+    return df
+
+# Data Transformation: Scaling
+def scale_features(df):
+    scaler = StandardScaler()
+    df[['age', 'salary', 'experience']] = scaler.fit_transform(df[['age', 'salary', 'experience']])
+    
+    return df
+
+# Feature Engineering: Creating New Features
+def create_new_features(df):
+    # Create a new feature: salary per year of experience
+    df['salary_per_experience'] = df['salary'] / (df['experience'] + 1)  # Add 1 to avoid division by zero
+    
+    return df
+
+# Feature Selection: Removing Low Variance Features
+def remove_low_variance_features(df):
+    selector = VarianceThreshold(threshold=0.1)
+    features = selector.fit_transform(df[['age', 'salary', 'experience', 'salary_per_experience']])
+    
+    # Update the DataFrame with selected features
+    selected_columns = ['age', 'salary', 'experience', 'salary_per_experience']
+    df_selected = pd.DataFrame(features, columns=selected_columns[:features.shape[1]])
+    
+    return df_selected
+
+# Main function to execute all steps
+def main():
+    print("Original DataFrame:")
+    print(df)
+    
+    df_cleaned = handle_missing_values(df)
+    print("\nAfter Handling Missing Values:")
+    print(df_cleaned)
+    
+    df_no_outliers = detect_and_remove_outliers(df_cleaned)
+    print("\nAfter Removing Outliers:")
+    print(df_no_outliers)
+    
+    df_scaled = scale_features(df_no_outliers)
+    print("\nAfter Scaling Features:")
+    print(df_scaled)
+    
+    df_with_new_features = create_new_features(df_scaled)
+    print("\nAfter Creating New Features:")
+    print(df_with_new_features)
+    
+    df_final = remove_low_variance_features(df_with_new_features)
+    print("\nFinal DataFrame After Feature Selection:")
+    print(df_final)
+
+if __name__ == "__main__":
+    main()

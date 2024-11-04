@@ -1,0 +1,40 @@
+# Import necessary libraries
+from pyspark.sql import SparkSession
+import dask.dataframe as dd
+
+# Initialize a Spark session
+spark = SparkSession.builder \
+    .appName("Big Data Processing") \
+    .config("spark.some.config.option", "some-value") \
+    .getOrCreate()
+
+# Load data into a Spark DataFrame from a CSV file
+spark_df = spark.read.csv("large_dataset.csv", header=True, inferSchema=True)
+
+# Register the DataFrame as a SQL temporary view
+spark_df.createOrReplaceTempView("data_table")
+
+# Perform SQL query using Spark SQL
+result_df = spark.sql("""
+    SELECT category, AVG(sales) as average_sales
+    FROM data_table
+    GROUP BY category
+    ORDER BY average_sales DESC
+""")
+
+# Show the result of the query
+result_df.show()
+
+# Convert Spark DataFrame to Pandas for smaller datasets or further processing
+pandas_df = result_df.toPandas()
+
+# Using Dask for distributed processing on another large dataset
+dask_df = dd.read_csv('another_large_dataset.csv')
+
+# Perform operations on the Dask DataFrame
+dask_result = dask_df.groupby('category').sales.mean().compute()
+
+print(dask_result)
+
+# Stop the Spark session
+spark.stop()
