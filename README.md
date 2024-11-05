@@ -1,1 +1,1 @@
-# violets_are_blue
+# violets_are_blue# Microsoft Certified Azure Data Scientist Associate, currently perusing a BS in Data Science at ASU. Skilled in financial analysis, operational strategy, and client-centered consulting, with a focus on maximizing efficiency and organizational effectiveness. Adept at integrating diverse knowledge areas to solve complex problems and enhance workflows. Now pursuing opportunities in AI-driven fields to apply a broad skill set and strategic thinking in technology-focused environments.

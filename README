@@ -7,7 +7,6 @@ This repository contains various machine learning projects demonstrating differe
 - **data/**: Contains sample datasets used for demonstration purposes.
 - **notebooks/**: Jupyter notebooks for exploratory data analysis (EDA), AutoML experiments, and time-series analysis.
 - **src/**: Python scripts for different machine learning tasks such as classification, regression, clustering, deep learning, AutoML pipelines, big data processing, and model evaluation.
-- **deployment/**: Contains Docker-related files for deploying models as REST APIs.
 
 ## Getting Started
 
